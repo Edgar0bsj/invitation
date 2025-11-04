@@ -34,7 +34,7 @@ export async function PUT(
 }
 
 export async function DELETE(_: Request, context: { params: { id: string } }) {
-  const { id } = context.params; //parametro
+  const { id } = await context.params; //parametro
   console.log(id);
   remove(id);
   return Response.json({

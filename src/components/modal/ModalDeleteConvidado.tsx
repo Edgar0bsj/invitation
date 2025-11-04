@@ -1,55 +1,105 @@
 "use client";
 
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { FormEvent, useEffect, useState } from "react";
 
-export default function ModalDeleteConvidado({ id, name }: any) {
-  /**
-   * hook state
-   */
+/**
+ * ============================================
+ * TYPES
+ * ============================================
+ */
+type ModalDeleteConvidadoProps = {
+  id: string;
+  name: string;
+};
+
+type GuestData = {
+  id: string;
+  name: string;
+};
+
+/**
+ * ============================================
+ * UTILITY (API)
+ * ============================================
+ */
+async function deleteGuestAPI(id: string) {
+  const response = await fetch(`/api/guest/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return response.status;
+}
+/**
+ * ============================================
+ * HOOKS
+ * ============================================
+ */
+function useModalDeleteConvidado(id: string, name: string) {
+  // Estados
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [data, setData] = useState({
+  const [data, setData] = useState<GuestData>({
     id: "",
     name: "",
   });
 
-  /**
-   * api
-   */
-  function updateGuest({ id, name, email, status }: any) {
-    fetch(`/api/guest/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, status }),
-    })
-      .then(() => toast.success("Convidado editado com sucesso!"))
-      .catch(() => toast.error("Erro ao editar convidado"));
-  }
-
-  /**
-   * Form
-   */
-  function formHandle(event: FormEvent) {
-    event.preventDefault(); //Interromper o reload
-    updateGuest(data); // api Post
-    setIsActive(false); // Fecha modal
-
-    return true;
-  }
-  /**
-   * hook Effect
-   */
+  // Sincroniza props
   useEffect(() => {
-    setData({
-      id,
-      name,
-    });
-  }, []);
+    setData({ id, name });
+  }, [id, name]);
+
+  // Handlers
+  const handleOpenModal = () => setIsActive(true);
+  const handleCloseModal = () => setIsActive(false);
+
+  const handleCancel = (event: FormEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    handleCloseModal();
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const result = await deleteGuestAPI(data.id);
+      if (result === 200) toast.success("Convidado retirado com sucesso!");
+      handleCloseModal();
+    } catch (err) {
+      toast.error("Erro ao retirar o convidado");
+    }
+  };
+
+  return {
+    isActive,
+    guestName: data.name,
+    handleOpenModal,
+    handleCloseModal,
+    handleCancel,
+    handleSubmit,
+  };
+}
+
+/**
+ * ============================================
+ * RENDER
+ * ============================================
+ */
+export default function ModalDeleteConvidado({
+  id,
+  name,
+}: ModalDeleteConvidadoProps) {
+  const {
+    isActive,
+    guestName,
+    handleOpenModal,
+    handleCloseModal,
+    handleSubmit,
+    handleCancel,
+  } = useModalDeleteConvidado(id, name);
 
   return (
     <>
-      <ToastContainer />
-      <button className="button" onClick={() => setIsActive(true)}>
+      <button className="button" onClick={handleOpenModal}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -64,22 +114,19 @@ export default function ModalDeleteConvidado({ id, name }: any) {
         </svg>
       </button>
       <div className={`modal ${isActive ? "is-active" : ""}`}>
-        <div
-          className="modal-background"
-          onClick={() => setIsActive(false)}
-        ></div>
+        <div className="modal-background" onClick={handleCloseModal}></div>
 
         <div className="modal-content">
           <div className="box">
             {/* from */}
-            <form>
+            <form onSubmit={handleSubmit}>
               {/* grid */}
               <div className="container is-fullwidth">
                 {/* Row 1 */}
                 <div className="columns">
                   <div className="column">
                     <div className="notification is-danger">
-                      <strong>{data.name} será retirado da lista.</strong>
+                      <strong>{guestName} será retirado da lista.</strong>
                     </div>
                   </div>
                 </div>
@@ -90,6 +137,7 @@ export default function ModalDeleteConvidado({ id, name }: any) {
                     <button
                       className="button is-danger is-dark"
                       style={{ width: "30rem" }}
+                      type="submit"
                     >
                       Retirar da lista
                     </button>
@@ -97,10 +145,8 @@ export default function ModalDeleteConvidado({ id, name }: any) {
                   <div className="column is-4 is-flex is-justify-content-end">
                     <button
                       className="button is-link"
-                      onClick={(e: FormEvent) => {
-                        e.preventDefault();
-                        setIsActive(false);
-                      }}
+                      onClick={handleCancel}
+                      type="button"
                     >
                       Cancelar
                     </button>
@@ -117,7 +163,7 @@ export default function ModalDeleteConvidado({ id, name }: any) {
         <button
           className="modal-close is-large"
           aria-label="close"
-          onClick={() => setIsActive(false)}
+          onClick={handleCloseModal}
         ></button>
       </div>
     </>

@@ -41,7 +41,6 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
 
   return (
     <>
-      <ToastContainer />
       <button className="button" onClick={() => setIsActive(true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
