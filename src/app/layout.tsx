@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +25,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <ToastContainer />
         <Navbar />
         <section className="hero is-link is-fullheight-with-navbar">
           {children}

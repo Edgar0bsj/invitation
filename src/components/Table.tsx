@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ModalUpdateConvidado from "./modal/ModalUpdateConvidado";
+import ModalDeleteConvidado from "./modal/ModalDeleteConvidado";
 
 export default function Table() {
   /**
@@ -45,22 +47,20 @@ export default function Table() {
 
   return (
     <>
+      {/* <ModalUpdateConvidado id="alo" name="alo" email="alo" status="" /> */}
       <div className="table-container">
         <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
           <thead>
             <tr>
-              <th>
-                <abbr>ID</abbr>
-              </th>
               <th>Nome</th>
               <th>Email</th>
               <th>Status</th>
+              <th>Editar / Deletar</th>
             </tr>
           </thead>
           <tbody>
             {guest.map((el: any) => (
               <tr key={el.id}>
-                <th>{el.id}</th>
                 <td>{el.name}</td>
                 <td>{el.email}</td>
                 <td
@@ -73,6 +73,21 @@ export default function Table() {
                   }
                 >
                   {el.status}
+                </td>
+                <td>
+                  <div className="columns is-0">
+                    <div className="column">
+                      <ModalUpdateConvidado
+                        id={el.id}
+                        name={el.name}
+                        email={el.email}
+                        status={el.status}
+                      />
+                    </div>
+                    <div className="column">
+                      <ModalDeleteConvidado id={el.id} name={el.name} />
+                    </div>
+                  </div>
                 </td>
               </tr>
             ))}

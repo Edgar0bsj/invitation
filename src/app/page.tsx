@@ -1,4 +1,4 @@
-import ModalAddConvidado from "@/components/ModalAddConvidado";
+import ModalAddConvidado from "@/components/modal/ModalAddConvidado";
 import Table from "@/components/Table";
 
 export default function Home() {
