@@ -1,47 +1,130 @@
 "use client";
 
-import { ToastContainer, toast } from "react-toastify";
-import { FormEvent, useState } from "react";
+import { toast } from "react-toastify";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
-export default function ModalUpdateConvidado({ id, name, email, status }: any) {
-  /**
-   * hook state
-   */
-  const [isActive, setIsActive] = useState<boolean>(false);
-  const [formData, setFormData] = useState({
-    id,
-    name,
-    email,
-    status,
+/**
+ * ============================================
+ * TYPES
+ * ============================================
+ */
+interface Guest {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+}
+interface HandleStateGuestData {
+  setName(event: ChangeEvent<HTMLInputElement>): void;
+  setEmail(event: ChangeEvent<HTMLInputElement>): void;
+  setStatus(event: ChangeEvent<HTMLSelectElement>): void;
+}
+/**
+ * ============================================
+ * UTILITY (API)
+ * ============================================
+ */
+async function updateGuestAPI(guestData: Guest) {
+  const response = await fetch(`/api/guest/${guestData.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: guestData.name,
+      email: guestData.email,
+      status: guestData.status,
+    }),
   });
 
-  /**
-   * api
-   */
-  function updateGuest({ id, name, email, status }: any) {
-    fetch(`/api/guest/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, status }),
-    })
-      .then(() => toast.success("Convidado editado com sucesso!"))
-      .catch(() => toast.error("Erro ao editar convidado"));
-  }
+  return response.status;
+}
+/**
+ * ============================================
+ * HOOKS
+ * ============================================
+ */
+function useModalUpdateConvidado(guest: Guest) {
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [guestData, setGuestData] = useState<Guest>({
+    id: "",
+    name: "",
+    email: "",
+    status: "",
+  });
 
-  /**
-   * Form
-   */
-  function formHandle(event: FormEvent) {
-    event.preventDefault(); //Interromper o reload
-    updateGuest(formData); // api Post
-    setIsActive(false); // Fecha modal
+  // Setando Props
+  useEffect(() => {
+    setGuestData({ ...guest });
+  }, [guest]);
 
-    return true;
-  }
+  // Handlers
+  const handleOpenModal = () => setIsActive(true);
+  const handleCloseModal = () => setIsActive(false);
 
+  const handleCancel = (event: FormEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    handleCloseModal();
+  };
+
+  const handleStateGuestData = (): HandleStateGuestData => {
+    const setName = (event: ChangeEvent<HTMLInputElement>) =>
+      setGuestData({
+        ...guestData,
+        name: event.target.value,
+      });
+    const setEmail = (event: ChangeEvent<HTMLInputElement>) =>
+      setGuestData({
+        ...guestData,
+        email: event.target.value,
+      });
+    const setStatus = (event: ChangeEvent<HTMLSelectElement>) =>
+      setGuestData({
+        ...guestData,
+        status: event.target.value,
+      });
+    return { setName, setEmail, setStatus };
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const result = await updateGuestAPI(guestData);
+      if (result === 200) toast.success("Convidado atualizado com sucesso!");
+      if (result === 422) throw new Error();
+      handleCloseModal();
+    } catch (err) {
+      toast.error("Erro ao atualizar o convidado");
+    }
+  };
+
+  return {
+    isActive,
+    guestData,
+    handleStateGuestData,
+    handleOpenModal,
+    handleCloseModal,
+    handleCancel,
+    handleSubmit,
+  };
+}
+
+/**
+ * ============================================
+ * RENDER
+ * ============================================
+ */
+export default function ModalUpdateConvidado(props: Guest) {
+  const {
+    isActive,
+    guestData,
+    handleStateGuestData,
+    handleOpenModal,
+    handleCloseModal,
+    handleCancel,
+    handleSubmit,
+  } = useModalUpdateConvidado(props);
   return (
     <>
-      <button className="button" onClick={() => setIsActive(true)}>
+      <button className="button" onClick={handleOpenModal}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
@@ -53,15 +136,12 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
         </svg>
       </button>
       <div className={`modal ${isActive ? "is-active" : ""}`}>
-        <div
-          className="modal-background"
-          onClick={() => setIsActive(false)}
-        ></div>
+        <div className="modal-background" onClick={handleCloseModal}></div>
 
         <div className="modal-content">
           <div className="box">
             {/* from */}
-            <form>
+            <form onSubmit={handleSubmit}>
               {/* grid */}
               <div className="container is-fullwidth">
                 {/* Row 1 */}
@@ -74,13 +154,8 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
                           className="input is-success"
                           type="text"
                           placeholder="Nome"
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              name: e.target.value,
-                            });
-                          }}
-                          value={formData.name}
+                          onChange={handleStateGuestData().setName}
+                          value={guestData.name}
                         />
                         <span className="icon is-small is-left">
                           <i className="fas fa-user"></i>
@@ -104,13 +179,8 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
                           className="input"
                           type="email"
                           placeholder="......@gmail.com"
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              email: e.target.value,
-                            });
-                          }}
-                          value={formData.email}
+                          onChange={handleStateGuestData().setEmail}
+                          value={guestData.email}
                         />
                       </div>
                     </div>
@@ -125,13 +195,8 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
                       <div className="control">
                         <div className="select">
                           <select
-                            onChange={(e) => {
-                              setFormData({
-                                ...formData,
-                                status: e.target.value,
-                              });
-                            }}
-                            value={formData.status}
+                            onChange={handleStateGuestData().setStatus}
+                            value={guestData.status}
                             required
                           >
                             <option value="pendente">Pendente</option>
@@ -149,20 +214,18 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
                   <div className="column is-flex is-justify-content-center is-three-quarters">
                     <button
                       className="button is-primary is-fullwidth"
-                      onClick={formHandle}
+                      type="submit"
                     >
                       Salvar
                     </button>
                   </div>
                   <div className="column is-flex is-justify-content-end">
                     <button
-                      onClick={(ev) => {
-                        ev.preventDefault();
-                        setIsActive(false);
-                      }}
+                      type="button"
                       className="button is-danger"
+                      onClick={handleCancel}
                     >
-                      Fechar
+                      Cancelar
                     </button>
                   </div>
                 </div>
@@ -177,7 +240,7 @@ export default function ModalUpdateConvidado({ id, name, email, status }: any) {
         <button
           className="modal-close is-large"
           aria-label="close"
-          onClick={() => setIsActive(false)}
+          onClick={handleCloseModal}
         ></button>
       </div>
     </>

@@ -1,3 +1,5 @@
+import ModalAddConvidado from "@/components/modal/ModalAddConvidado";
+
 export default function Navbar() {
   return (
     <>
@@ -11,8 +13,7 @@ export default function Navbar() {
             <div className="navbar-end">
               <div className="navbar-item">
                 <div className="buttons">
-                  <a className="button is-dark">Github</a>
-                  <a className="button is-warning">Enviar Convites por email</a>
+                  <ModalAddConvidado />
                 </div>
               </div>
             </div>

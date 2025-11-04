@@ -1,53 +1,95 @@
 "use client";
 
+import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import ModalUpdateConvidado from "./modal/ModalUpdateConvidado";
 import ModalDeleteConvidado from "./modal/ModalDeleteConvidado";
 
-export default function Table() {
-  /**
-   * hook State
-   */
-  const [guest, setGuest] = useState([]);
+/**
+ * ============================================
+ * TYPES
+ * ============================================
+ */
+interface FindAllGuestAPI {
+  status: number;
+  data: [
+    {
+      id: string;
+      name: string;
+      email: string;
+      status: string;
+    }
+  ];
+}
 
-  /**
-   * utility
-   */
+interface Guest {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+}
+/**
+ * ============================================
+ * API
+ * ============================================
+ */
+async function findAllGuestAPI(): Promise<FindAllGuestAPI> {
+  const response = await fetch("/api/guest", {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
 
+  const data = await response.json();
+
+  return { status: response.status, data };
+}
+/**
+ * ============================================
+ * UTILITY
+ * ============================================
+ */
+function utility() {
   const textColor = {
     confirmado: "has-text-success",
     pendente: "has-text-info",
     ausente: "has-text-danger",
   };
+  return { textColor };
+}
 
-  /**
-   * API
-   */
+/**
+ * ============================================
+ * HOOKS
+ * ============================================
+ */
+function useTable() {
+  const [guest, setGuest] = useState<Guest[]>([]);
 
-  function findAllGuest() {
-    fetch("/api/guest", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        return setGuest(data);
-      });
-  }
-
-  /**
-   * hook Effect
-   */
-
+  // definindo estado
   useEffect(() => {
-    findAllGuest();
+    findAllGuestAPI()
+      .then((result) => {
+        setGuest(result.data);
+      })
+      .catch(() => {
+        toast.error("ERRO! ao carregar dados");
+      });
   }, []);
+
+  return { guest };
+}
+
+/**
+ * ============================================
+ * RENDER
+ * ============================================
+ */
+export default function Table() {
+  const { guest } = useTable();
+  const { textColor } = utility();
 
   return (
     <>
-      {/* <ModalUpdateConvidado id="alo" name="alo" email="alo" status="" /> */}
       <div className="table-container">
         <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
           <thead>
@@ -59,7 +101,7 @@ export default function Table() {
             </tr>
           </thead>
           <tbody>
-            {guest.map((el: any) => (
+            {guest.map((el: Guest) => (
               <tr key={el.id}>
                 <td>{el.name}</td>
                 <td>{el.email}</td>
