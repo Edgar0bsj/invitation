@@ -1,74 +1,139 @@
 "use client";
 
 import { toast } from "react-toastify";
-import { FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
-export default function ModalAddConvidado() {
-  /**
-   * hook state
-   */
+/**
+ * ============================================
+ * TYPES
+ * ============================================
+ */
+interface Guest {
+  name: string;
+  email: string;
+  status: string;
+}
+
+interface HandleStateGuest {
+  setName(event: ChangeEvent<HTMLInputElement>): void;
+  setEmail(event: ChangeEvent<HTMLInputElement>): void;
+  setStatus(event: ChangeEvent<HTMLSelectElement>): void;
+}
+
+/**
+ * ============================================
+ * UTILITY (API)
+ * ============================================
+ */
+async function addGuestAPI(guestData: Guest) {
+  const response = await fetch("/api/guest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(guestData),
+  });
+  return response.status;
+}
+
+/**
+ * ============================================
+ * HOOKS
+ * ============================================
+ */
+function useModalAddConvidado() {
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [formData, setFormData] = useState({
+  const [guest, setGuest] = useState<Guest>({
     name: "",
     email: "",
     status: "",
   });
 
-  /**
-   * api
-   */
-  function createGuest(formData: any) {
-    !formData.status && formData.status === ""
-      ? (formData.status = "pendente")
-      : null;
+  // Handlers
+  const handleOpenModal = () => setIsActive(true);
+  const handleCloseModal = () => setIsActive(false);
 
-    fetch("/api/guest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => {
-        if (response.status != 200) throw new Error();
-      })
-      .then(() => toast.success("Convidado adicionado com sucesso!"))
-      .catch(() => toast.error("Erro ao adicionar convidado"));
-  }
+  const handleCancel = (event: FormEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    handleCloseModal();
+  };
 
-  /**
-   * Form
-   */
-  function formHandle(event: FormEvent) {
-    createGuest(formData); // api Post
-    setIsActive(false); // Fecha modal
+  const handleStateGuest = (): HandleStateGuest => {
+    const setName = (event: ChangeEvent<HTMLInputElement>) =>
+      setGuest({
+        ...guest,
+        name: event.target.value,
+      });
+    const setEmail = (event: ChangeEvent<HTMLInputElement>) =>
+      setGuest({
+        ...guest,
+        email: event.target.value,
+      });
+    const setStatus = (event: ChangeEvent<HTMLSelectElement>) =>
+      setGuest({
+        ...guest,
+        status: event.target.value,
+      });
+    return { setName, setEmail, setStatus };
+  };
 
-    //Limpar os campos
-    setFormData({
-      name: "",
-      email: "",
-      status: "",
-    });
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const result = await addGuestAPI(guest);
+      if (result === 200) toast.success("Convidado adicionado com sucesso!");
+      if (result === 422) throw new Error();
+      handleCloseModal();
+      setGuest({
+        name: "",
+        email: "",
+        status: "",
+      });
+    } catch (err) {
+      toast.error("Erro ao adicionar o convidado");
+    }
+  };
 
-    return true;
-  }
+  return {
+    isActive,
+    guest,
+    handleOpenModal,
+    handleCloseModal,
+    handleCancel,
+    handleStateGuest,
+    handleSubmit,
+  };
+}
+
+/**
+ * ============================================
+ * RENDER
+ * ============================================
+ */
+export default function ModalAddConvidado() {
+  const {
+    isActive,
+    guest,
+    handleOpenModal,
+    handleCloseModal,
+    handleCancel,
+    handleStateGuest,
+    handleSubmit,
+  } = useModalAddConvidado();
 
   return (
     <>
       <button
         className="button is-medium is-fullwidth"
-        onClick={() => setIsActive(true)}
+        onClick={handleOpenModal}
       >
         Add convidado
       </button>
       <div className={`modal ${isActive ? "is-active" : ""}`}>
-        <div
-          className="modal-background"
-          onClick={() => setIsActive(false)}
-        ></div>
+        <div className="modal-background" onClick={handleCloseModal}></div>
 
         <div className="modal-content">
           <div className="box">
             {/* from */}
-            <form>
+            <form onSubmit={handleSubmit}>
               {/* grid */}
               <div className="container is-fullwidth">
                 {/* Row 1 */}
@@ -81,13 +146,8 @@ export default function ModalAddConvidado() {
                           className="input is-success"
                           type="text"
                           placeholder="Nome"
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              name: e.target.value,
-                            });
-                          }}
-                          value={formData.name}
+                          onChange={handleStateGuest().setName}
+                          value={guest.name}
                         />
                         <span className="icon is-small is-left">
                           <i className="fas fa-user"></i>
@@ -111,13 +171,8 @@ export default function ModalAddConvidado() {
                           className="input"
                           type="email"
                           placeholder="......@gmail.com"
-                          onChange={(e) => {
-                            setFormData({
-                              ...formData,
-                              email: e.target.value,
-                            });
-                          }}
-                          value={formData.email}
+                          onChange={handleStateGuest().setEmail}
+                          value={guest.email}
                         />
                       </div>
                     </div>
@@ -132,13 +187,8 @@ export default function ModalAddConvidado() {
                       <div className="control">
                         <div className="select">
                           <select
-                            onChange={(e) => {
-                              setFormData({
-                                ...formData,
-                                status: e.target.value,
-                              });
-                            }}
-                            value={formData.status}
+                            onChange={handleStateGuest().setStatus}
+                            value={guest.status}
                             required
                           >
                             <option value="" disabled>
@@ -159,17 +209,15 @@ export default function ModalAddConvidado() {
                   <div className="column is-flex is-justify-content-center is-three-quarters">
                     <button
                       className="button is-primary is-fullwidth"
-                      onClick={formHandle}
+                      type="submit"
                     >
                       Salvar
                     </button>
                   </div>
                   <div className="column is-flex is-justify-content-end">
                     <button
-                      onClick={(ev) => {
-                        ev.preventDefault();
-                        setIsActive(false);
-                      }}
+                      type="button"
+                      onClick={handleCancel}
                       className="button is-danger"
                     >
                       Fechar
@@ -187,7 +235,7 @@ export default function ModalAddConvidado() {
         <button
           className="modal-close is-large"
           aria-label="close"
-          onClick={() => setIsActive(false)}
+          onClick={handleCloseModal}
         ></button>
       </div>
     </>
