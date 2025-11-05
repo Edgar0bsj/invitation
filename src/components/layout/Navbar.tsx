@@ -2,7 +2,20 @@
 
 import ModalAddConvidado from "@/components/modal/ModalAddConvidado";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
+/**
+ * ============================================
+ * API
+ * ============================================
+ */
+async function sendInvitesAPI() {
+  const response = await fetch("/api/send-invites", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.status;
+}
 /**
  * ============================================
  * HOOKS
@@ -15,10 +28,18 @@ function useNavbar() {
   const handleToggle = () => {
     setToggleMenu(!toggleMenu);
   };
+  const handleSendInvites = () => {
+    sendInvitesAPI().then((resp) => {
+      if (resp === 200)
+        toast.success("Convites enviado por email com sucesso!");
+      if (resp === 500) toast.error("Error ao enviar Emails!");
+    });
+  };
 
   return {
     toggleMenu,
     handleToggle,
+    handleSendInvites,
   };
 }
 
@@ -28,7 +49,7 @@ function useNavbar() {
  * ============================================
  */
 export default function Navbar() {
-  const { toggleMenu, handleToggle } = useNavbar();
+  const { toggleMenu, handleToggle, handleSendInvites } = useNavbar();
 
   return (
     <>
@@ -62,7 +83,9 @@ export default function Navbar() {
               <a className="navbar-link">Enviar Convite</a>
 
               <div className="navbar-dropdown">
-                <a className="navbar-item">Por Email</a>
+                <a className="navbar-item" onClick={handleSendInvites}>
+                  Por Email
+                </a>
               </div>
             </div>
           </div>
