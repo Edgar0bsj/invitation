@@ -26,11 +26,7 @@ export default function RootLayout({
       </head>
       <body>
         <ToastContainer />
-        <Navbar />
-        <section className="hero is-link is-fullheight-with-navbar">
-          {children}
-        </section>
-        <Footer />
+        <section>{children}</section>
       </body>
     </html>
   );

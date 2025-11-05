@@ -10,8 +10,8 @@ export async function POST() {
     const guests = await GuestModel.find({ status: "pendente" });
 
     for (const guest of guests) {
-      const confirmLink = `${process.env.NEXT_PUBLIC_SITE_URL}/confirmar/${guest._id}`;
-      const declineLink = `${process.env.NEXT_PUBLIC_SITE_URL}/decline/${guest._id}`;
+      const confirmLink = `${process.env.NEXT_PUBLIC_SITE_URL}/confirmar/${guest._id}t`;
+      const declineLink = `${process.env.NEXT_PUBLIC_SITE_URL}/confirmar/${guest._id}f`;
 
       const { title, msgHtml } = configEmail(
         guest.name,
