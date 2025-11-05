@@ -1,11 +1,14 @@
-import { findAll, create } from "@/db/dbMock";
 import { GuestSchema } from "@/model/guestValidation";
+import { connectDB } from "@/db/connection";
+import GuestModel from "@/model/Guest";
 /**
  * Metodo GET
  * @returns Retorna todos os convidados
  */
 export async function GET() {
-  const convidados = await findAll();
+  await connectDB();
+
+  const convidados = await GuestModel.find();
 
   return Response.json(convidados);
 }
@@ -16,6 +19,8 @@ export async function GET() {
  * @returns Cria um novo convidado
  */
 export async function POST(request: any) {
+  await connectDB();
+
   const { name, email, status } = await request.json();
 
   const parsed = GuestSchema.safeParse({ name, email, status });
@@ -26,12 +31,16 @@ export async function POST(request: any) {
     });
 
   const data = parsed.data;
-  create(data);
 
-  console.log("Novo convidado:", data);
+  const newGuest = await GuestModel.create(data);
+  if (!newGuest)
+    return new Response(JSON.stringify({ error: "Error ao salvar dados" }), {
+      status: 422,
+      headers: { "Content-Type": "application/json" },
+    });
 
   return Response.json({
     message: "Convidado cadastrado com sucesso!",
-    convidado: data,
+    data,
   });
 }

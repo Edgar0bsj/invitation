@@ -14,7 +14,7 @@ interface FindAllGuestAPI {
   status: number;
   data: [
     {
-      id: string;
+      _id: string;
       name: string;
       email: string;
       status: string;
@@ -23,7 +23,7 @@ interface FindAllGuestAPI {
 }
 
 interface Guest {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   status: string;
@@ -102,7 +102,7 @@ export default function Table() {
           </thead>
           <tbody>
             {guest.map((el: Guest) => (
-              <tr key={el.id}>
+              <tr key={el._id}>
                 <td>{el.name}</td>
                 <td>{el.email}</td>
                 <td
@@ -120,14 +120,14 @@ export default function Table() {
                   <div className="columns is-0">
                     <div className="column">
                       <ModalUpdateConvidado
-                        id={el.id}
+                        id={el._id}
                         name={el.name}
                         email={el.email}
                         status={el.status}
                       />
                     </div>
                     <div className="column">
-                      <ModalDeleteConvidado id={el.id} name={el.name} />
+                      <ModalDeleteConvidado id={el._id} name={el.name} />
                     </div>
                   </div>
                 </td>

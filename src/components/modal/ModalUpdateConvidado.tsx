@@ -89,6 +89,7 @@ function useModalUpdateConvidado(guest: Guest) {
     try {
       const result = await updateGuestAPI(guestData);
       if (result === 200) toast.success("Convidado atualizado com sucesso!");
+      if (result === 500) toast.error("Erro ao atualizar o convidado");
       if (result === 422) throw new Error();
       handleCloseModal();
     } catch (err) {

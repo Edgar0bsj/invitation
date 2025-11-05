@@ -20,7 +20,7 @@ type GuestData = {
 
 /**
  * ============================================
- * UTILITY (API)
+ * API
  * ============================================
  */
 async function deleteGuestAPI(id: string) {
@@ -63,6 +63,7 @@ function useModalDeleteConvidado(id: string, name: string) {
     try {
       const result = await deleteGuestAPI(data.id);
       if (result === 200) toast.success("Convidado retirado com sucesso!");
+      if (result === 500) toast.error("Error!");
       handleCloseModal();
     } catch (err) {
       toast.error("Erro ao retirar o convidado");

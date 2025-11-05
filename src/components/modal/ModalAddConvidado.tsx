@@ -22,7 +22,7 @@ interface HandleStateGuest {
 
 /**
  * ============================================
- * UTILITY (API)
+ * API
  * ============================================
  */
 async function addGuestAPI(guestData: Guest) {
@@ -80,6 +80,7 @@ function useModalAddConvidado() {
     try {
       const result = await addGuestAPI(guest);
       if (result === 200) toast.success("Convidado adicionado com sucesso!");
+      if (result === 500) toast.error("Erro ao adicionar o convidado");
       if (result === 422) throw new Error();
       handleCloseModal();
       setGuest({
