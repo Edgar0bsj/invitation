@@ -1,7 +1,7 @@
 # INVITATION
 
 <p align="center">
-<img width="300" height="300" alt="Image" src="https://github-production-user-asset-6210df.s3.amazonaws.com/180589510/510539221-75236ff1-559b-46f7-811e-5e76ec03301b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20251106%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251106T035526Z&X-Amz-Expires=300&X-Amz-Signature=42a68e52a5a5b8660b826cb5748af8e192d38fcdf73c0cda9a9850469570c148&X-Amz-SignedHeaders=host" />
+<img width="300" height="300" alt="Image" src="public/invitation.png" />
 </p>
 
 # 📨 Sistema de Gerenciamento e Convite de Convidados
